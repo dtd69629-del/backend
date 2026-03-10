@@ -7,7 +7,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "..")));
 
 mongoose.connect("mongodb+srv://dtd69629_db_user:dtd0987654321@cluster0.w1pvxha.mongodb.net/historial_app")
 .then(() => console.log("MongoDB conectado"))
@@ -76,7 +75,7 @@ app.delete("/tickets/:id", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "index.html"));
+  res.send("API del Historial de Vuelos Funcional");
 });
 
 const PORT = process.env.PORT || 3000;
