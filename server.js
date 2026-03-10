@@ -28,6 +28,59 @@ const ticketSchema = new mongoose.Schema({
 
 const Ticket = mongoose.model("Ticket", ticketSchema);
 
+const flightSchema = new mongoose.Schema({
+  flightNumber: { type: String, required: true },
+  airline: { type: String, required: true },
+  origin: { type: String, required: true },
+  destination: { type: String, required: true },
+  departureTime: { type: String, required: true },
+  arrivalTime: { type: String, required: true },
+  duration: { type: String, required: true },
+  stops: { type: String, required: true },
+  price: { type: String, required: true },
+  icon: { type: String, default: 'fas fa-plane' },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Flight = mongoose.model("Flight", flightSchema);
+
+app.post("/flights", async (req, res) => {
+  try {
+    const flight = new Flight(req.body);
+    await flight.save();
+    res.status(201).json(flight);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/flights", async (req, res) => {
+  try {
+    const flights = await Flight.find().sort({ createdAt: -1 });
+    res.json(flights);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put("/flights/:id", async (req, res) => {
+  try {
+    const flight = await Flight.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(flight);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/flights/:id", async (req, res) => {
+  try {
+    await Flight.findByIdAndDelete(req.params.id);
+    res.json({ message: "Vuelo eliminado" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post("/tickets", async (req, res) => {
   try {
     const ticket = new Ticket(req.body);
