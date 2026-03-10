@@ -1,17 +1,17 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "..")));
 
-mongoose.connect(
-  "mongodb+srv://dtd69629_db_user:dtd0987654321@cluster0.w1pvxha.mongodb.net/historial_app"
-)
-.then(() => console.log("MongoDB conectado correctamente"))
-.catch(err => console.error("Error MongoDB:", err));
+mongoose.connect("mongodb+srv://dtd69629_db_user:dtd0987654321@cluster0.w1pvxha.mongodb.net/historial_app")
+.then(() => console.log("MongoDB conectado"))
+.catch(err => console.error(err));
 
 const ticketSchema = new mongoose.Schema({
   uid: { type: String, required: true },
@@ -33,7 +33,16 @@ app.post("/tickets", async (req, res) => {
   try {
     const ticket = new Ticket(req.body);
     await ticket.save();
-    res.status(201).json({ message: "Ticket guardado", ticket });
+    res.status(201).json(ticket);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/tickets", async (req, res) => {
+  try {
+    const tickets = await Ticket.find().sort({ createdAt: -1 });
+    res.json(tickets);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -48,12 +57,28 @@ app.get("/tickets/:uid", async (req, res) => {
   }
 });
 
+app.put("/tickets/:id", async (req, res) => {
+  try {
+    const ticket = await Ticket.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(ticket);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/tickets/:id", async (req, res) => {
+  try {
+    await Ticket.findByIdAndDelete(req.params.id);
+    res.json({ message: "Eliminado" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/", (req, res) => {
-  res.send("Servidor funcionando correctamente");
+  res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Puerto ${PORT}`));
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
-});
